@@ -30,8 +30,9 @@ class Application:
         shutdown_event = asyncio.Event()
 
         def signal_handler():
-            info("Shutdown signal received, stopping...")
-            shutdown_event.set()
+            if not shutdown_event.is_set():
+                info("Shutdown signal received, stopping...")
+                shutdown_event.set()
 
         loop = asyncio.get_running_loop()
         for sig in (signal.SIGINT, signal.SIGTERM):
@@ -49,12 +50,18 @@ class Application:
         finally:
             if monitoring_task:
                 monitoring_task.cancel()
-                await asyncio.gather(monitoring_task, return_exceptions=True)
+                try:
+                    await asyncio.wait_for(asyncio.gather(monitoring_task, return_exceptions=True), timeout=5.0)
+                except asyncio.TimeoutError:
+                    error("Monitoring task did not cancel within 5 seconds.")
 
             if client.is_connected:
                 info("Stopping client...")
-                await client.stop()
-                info("Client stopped.")
+                try:
+                    await asyncio.wait_for(client.stop(), timeout=5.0)
+                    info("Client stopped.")
+                except asyncio.TimeoutError:
+                    error("Client did not stop within 5 seconds.")
 
     @staticmethod
     def main() -> None:
