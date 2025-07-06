@@ -5,4 +5,3 @@ env/
 venv/
 .idea/
 data/account.session
-config.ini
