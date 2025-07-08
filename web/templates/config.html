@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конфигуратор Gifts-Buyer</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>🎁 Gifts-Buyer Конфигуратор</h1>
+      <p>Удобное редактирование настроек без правки файлов</p>
+    </header>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Загрузка настроек...</p>
+    </div>
+
+    <div id="message" class="message hidden"></div>
+
+    <form id="configForm" class="config-form hidden">
+      <!-- Telegram Settings -->
+      <section class="section">
+        <h2>📱 Telegram Настройки</h2>
+        <div class="field-group">
+          <label for="api_id">API ID:</label>
+          <input type="text" id="api_id" name="api_id" required>
+          <div class="help">
+            Получите на <a href="https://my.telegram.org/apps" target="_blank">my.telegram.org/apps</a>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="api_hash">API Hash:</label>
+          <input type="text" id="api_hash" name="api_hash" required>
+          <div class="help">
+            Получите на <a href="https://my.telegram.org/apps" target="_blank">my.telegram.org/apps</a>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="phone_number">Номер телефона:</label>
+          <input type="text" id="phone_number" name="phone_number" required>
+          <div class="help">
+            Номер телефона, КОТОРЫЙ БУДЕТ ЗАКУПАТЬ подарки (в формате +79123456789)
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="channel_id">ID канала для уведомлений:</label>
+          <input type="text" id="channel_id" name="channel_id">
+          <div class="help">
+            ID канала или @username для уведомлений. Укажите -100, чтобы отключить
+          </div>
+        </div>
+      </section>
+
+      <!-- Bot Settings -->
+      <section class="section">
+        <h2>🤖 Настройки Бота</h2>
+        <div class="field-group">
+          <label for="interval">Интервал проверки (секунды):</label>
+          <input type="number" id="interval" name="interval" min="1" max="3600" value="10">
+          <div class="help">
+            Интервал проверки новых подарков в секундах (1-3600 секунд)
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="language">Язык:</label>
+          <select id="language" name="language">
+            <option value="EN">English</option>
+            <option value="RU" selected>Русский</option>
+          </select>
+          <div class="help">
+            Язык уведомлений: EN или RU
+          </div>
+        </div>
+      </section>
+
+      <!-- Gifts Settings -->
+      <section class="section">
+        <h2>🎁 Настройки Подарков</h2>
+        <div class="field-group">
+          <label>Настройка диапазонов подарков:</label>
+          <div class="help" style="margin-bottom: 15px;">
+            <strong>Настройте покупку подарков по цене и получателям</strong><br>
+            Можете добавить несколько диапазонов для разных ценовых категорий
+          </div>
+
+          <div id="giftRanges">
+            <div class="gift-range-item">
+              <div class="range-header">
+                <h4>Диапазон подарков #1</h4>
+                <button type="button" class="btn-remove" onclick="removeGiftRange(this)"
+                  style="display: none;">❌</button>
+              </div>
+
+              <div class="range-fields">
+                <div class="field-row">
+                  <div class="field-col">
+                    <label>Цена от (звезды):</label>
+                    <input type="number" class="range-min" min="1" value="1" required>
+                  </div>
+                  <div class="field-col">
+                    <label>Цена до (звезды):</label>
+                    <input type="number" class="range-max" min="1" value="100000" required>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field-col">
+                    <label>Лимит тиража (supply):</label>
+                    <input type="number" class="range-supply" min="1" value="1000000" required>
+                    <div class="field-help">Покупать, если подарков в продаже меньше этого числа</div>
+                  </div>
+                  <div class="field-col">
+                    <label>Количество покупки:</label>
+                    <input type="number" class="range-quantity" min="1" value="10000" required>
+                    <div class="field-help">Сколько штук покупать</div>
+                  </div>
+                </div>
+
+                <div class="field-full">
+                  <label>Получатели:</label>
+                  <input type="text" class="range-recipients" placeholder="@username, @channel, 123456789" required>
+                  <div class="field-help">Укажите @username или ID через запятую</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-secondary" onclick="addGiftRange()">➕ Добавить диапазон</button>
+        </div>
+
+        <div class="field-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="purchase_only_upgradable_gifts" name="purchase_only_upgradable_gifts">
+            <span class="checkmark"></span>
+            Покупать только подарки с возможностью апгрейда
+          </label>
+          <div class="help">
+            Покупать только те подарки, которые можно улучшить СРАЗУ ПОСЛЕ ПОКУПКИ (лучше не трогать, иначе есть риск,
+            что подарки не будут куплены)
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="prioritize_low_supply" name="prioritize_low_supply" checked>
+            <span class="checkmark"></span>
+            Приоритет подаркам с низким тиражом
+          </label>
+          <div class="help">
+            Приоритет подаркам с низким тиражом, соответствующим диапазонам
+          </div>
+        </div>
+      </section>
+
+      <div class="buttons">
+        <button type="submit" class="btn btn-primary">💾 Сохранить настройки</button>
+        <button type="button" class="btn btn-secondary" onclick="loadConfig()">🔄 Сбросить изменения</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+
+</html>

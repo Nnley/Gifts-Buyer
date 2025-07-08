@@ -23,11 +23,19 @@ cd Gifts-Buyer
 pip install -r requirements.txt
 ```
 
-Edit `config.ini` with your settings and run:
+**Easy setup**: Use our web configurator for simple configuration:
+
+```bash
+python web_config.py
+```
+
+Or edit `config.ini` manually with your settings and run:
 
 ```bash
 python main.py
 ```
+
+> 📖 For detailed web configurator guide, see [README-WEB-CONFIG.md](README-WEB-CONFIG.md)
 
 ## 🐳 Docker Usage
 

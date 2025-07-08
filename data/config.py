@@ -73,8 +73,14 @@ class Config:
     def _parse_single_range(self, range_item: str) -> Dict[str, Any]:
         try:
             price_part, rest = range_item.split(':', 1)
-            supply_qty_part, recipients_part = rest.strip().split(':', 1)
-            supply_part, quantity_part = supply_qty_part.strip().split(' x ')
+            if ' x ' in rest:
+                supply_qty_part, recipients_part = rest.strip().split(':', 1)
+                supply_part, quantity_part = supply_qty_part.strip().split(' x ')
+            elif 'x' in rest:
+                supply_qty_part, recipients_part = rest.strip().split(':', 1)
+                supply_part, quantity_part = supply_qty_part.strip().split('x')
+            else:
+                raise ValueError('Invalid format: missing x separator')
 
             min_price, max_price = map(int, price_part.strip().split('-'))
             supply_limit = int(supply_part.strip())
