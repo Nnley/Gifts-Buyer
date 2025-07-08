@@ -2,13 +2,16 @@ from typing import Optional, Tuple
 
 from pyrogram import Client
 
+from app.utils.logger import error
+
 
 class UserHelper:
     @staticmethod
     async def get_user_balance(client: Client) -> int:
         try:
             return await client.get_stars_balance()
-        except Exception:
+        except Exception as e:
+            error(f"Failed to get stars balance: {e}")
             return 0
 
     @staticmethod
