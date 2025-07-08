@@ -1,6 +1,7 @@
 import asyncio
 import traceback
 import signal
+import platform
 
 from pyrogram import Client
 
@@ -35,8 +36,10 @@ class Application:
                 shutdown_event.set()
 
         loop = asyncio.get_running_loop()
-        for sig in (signal.SIGINT, signal.SIGTERM):
-            loop.add_signal_handler(sig, signal_handler)
+        
+        if platform.system() != 'Windows':
+            for sig in (signal.SIGINT, signal.SIGTERM):
+                loop.add_signal_handler(sig, signal_handler)
 
         monitoring_task = None
         try:
@@ -46,7 +49,16 @@ class Application:
 
             monitoring_task = asyncio.create_task(gift_monitoring(client, process_gift))
 
-            await shutdown_event.wait()
+            if platform.system() == 'Windows':
+                while not shutdown_event.is_set():
+                    try:
+                        await asyncio.wait_for(shutdown_event.wait(), timeout=1.0)
+                        break
+                    except asyncio.TimeoutError:
+                        continue
+            else:
+                await shutdown_event.wait()
+                
         finally:
             if monitoring_task:
                 monitoring_task.cancel()
@@ -68,7 +80,7 @@ class Application:
         try:
             asyncio.run(Application.run())
         except (KeyboardInterrupt, SystemExit):
-            pass
+            info("Shutdown signal received, stopping...")
         except Exception:
             error(t("console.unexpected_error"))
             traceback.print_exc()
